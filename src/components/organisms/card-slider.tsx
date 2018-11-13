@@ -4,9 +4,7 @@ import { View, StyleSheet } from 'react-native';
 type Props = {};
 export default class CardSlider extends Component<Props> {
   render() {
-    return (
-      <View style={styles.wideSlider}/>
-    );
+    return <View style={styles.wideSlider} />;
   }
 }
 
