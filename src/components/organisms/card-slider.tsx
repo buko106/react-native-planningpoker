@@ -1,5 +1,11 @@
 import React, { Component } from 'react';
-import { View, StyleSheet, ViewStyle, GestureResponderEvent, LayoutChangeEvent } from 'react-native'
+import {
+  View,
+  StyleSheet,
+  ViewStyle,
+  GestureResponderEvent,
+  LayoutChangeEvent,
+} from 'react-native';
 
 import PokerCard, { CardContent, NumberCard } from '../molecules/poker-card';
 
@@ -18,6 +24,8 @@ export default class CardSlider extends Component<Props, State> {
   }
 
   currentLocationX: number | null = null;
+  currentLocationY: number | null = null;
+  selectedNumber: number | null = null;
   currentPosition = 0.5;
   sliderWidth: number = 0;
 
@@ -34,33 +42,64 @@ export default class CardSlider extends Component<Props, State> {
       this.forceUpdate();
     }
 
+    if (this.selectedNumber == null && this.currentLocationY != null) {
+      const diff = e.locationY - this.currentLocationY;
+      const swipeThreshold = 3.0;
+      const selectionThreshold = 0.03;
+
+      if (-diff > swipeThreshold) {
+        const length = this.state.cardContents.length;
+        this.state.cardContents.forEach((content, index) => {
+          if ((index + 0.5) / length < selectionThreshold) {
+            this.selectedNumber = content.value;
+          }
+        });
+      }
+    }
+
     this.currentLocationX = e.locationX;
+    this.currentLocationY = e.locationY;
   }
 
   onTouchEnd(event: GestureResponderEvent) {
     const e = event.nativeEvent;
     this.currentLocationX = null;
+    this.currentLocationY = null;
   }
 
   onTouchStart(event: GestureResponderEvent) {
     const e = event.nativeEvent;
     this.currentLocationX = e.locationX;
+    this.currentLocationY = e.locationY;
   }
 
   onLayout(event: LayoutChangeEvent) {
-    this.sliderWidth = event.nativeEvent.layout.width
+    this.sliderWidth = event.nativeEvent.layout.width;
   }
 
   render() {
-    const length = this.state.cardContents.length
+    const length = this.state.cardContents.length;
     return (
-      <View style={styles.wideSlider} onLayout={(event) => this.onLayout(event)}
-            onTouchMove={(event) => this.onTouchMove(event) } onTouchEnd={(event) => this.onTouchEnd(event)} onTouchStart={(event) => this.onTouchStart(event)}>
+      <View
+        style={styles.wideSlider}
+        onLayout={event => this.onLayout(event)}
+        onTouchMove={event => this.onTouchMove(event)}
+        onTouchEnd={event => this.onTouchEnd(event)}
+        onTouchStart={event => this.onTouchStart(event)}
+      >
         {this.state.cardContents.map((content, index) => (
-          <View key={index} style={getCardPosition(index / length,
-            index / length <= this.currentPosition && this.currentPosition < (index+1) / length
-          )}>
-            <PokerCard content={content} />
+          <View
+            key={index}
+            style={getCardPosition(
+              index / length,
+              (index + 0.5) / length,
+              this.currentPosition
+            )}
+          >
+            <PokerCard
+              content={content}
+              selected={content.value === this.selectedNumber}
+            />
           </View>
         ))}
       </View>
@@ -68,12 +107,18 @@ export default class CardSlider extends Component<Props, State> {
   }
 }
 
-function getCardPosition(position: number, selected: boolean): ViewStyle {
+function getCardPosition(
+  left: number,
+  center: number,
+  current: number
+): ViewStyle {
+  const diff = (current - center) * 15.0;
+  const bottom = 1 / (1 + diff * diff);
   return {
     position: 'absolute',
-    left: `${position * 100}%`,
-    bottom: selected ? '50%' : '0%',
-  }
+    left: `${left * 100}%`,
+    bottom: `${bottom > 0.15 ? bottom * 100 : 0}%`,
+  };
 }
 
 const styles = StyleSheet.create({

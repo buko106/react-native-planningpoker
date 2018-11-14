@@ -1,18 +1,26 @@
-import React, { Component } from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import React, { Component } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 export interface NumberCard {
   type: 'number';
   value: number;
 }
 export type CardContent = NumberCard;
-type Props = { content: CardContent };
+interface Props {
+  content: CardContent;
+  selected: boolean;
+}
 export default class PokerCard extends Component<Props> {
   render() {
     const content = this.props.content;
     if (content.type === 'number') {
       return (
-        <View style={styles.outline}>
+        <View
+          style={[
+            styles.outline,
+            ...[this.props.selected ? [styles.selected] : []],
+          ]}
+        >
           <View style={styles.textLayer}>
             <Text style={styles.text}>{content.value}</Text>
           </View>
@@ -31,6 +39,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 5,
     borderColor: 'red',
+  },
+  selected: {
+    backgroundColor: 'yellow',
   },
   textLayer: {
     position: 'absolute',
