@@ -1,5 +1,5 @@
-import React, { Component } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { Component } from 'react'
+import { StyleSheet, Text, View } from 'react-native'
 
 export interface NumberCard {
   type: 'number';
@@ -13,7 +13,10 @@ export default class PokerCard extends Component<Props> {
     if (content.type === 'number') {
       return (
         <View style={styles.outline}>
-          <Text style={styles.text}>{content.value}</Text>
+          <View style={styles.textLayer}>
+            <Text style={styles.text}>{content.value}</Text>
+          </View>
+          <Text style={styles.smallText}>{content.value}</Text>
         </View>
       );
     }
@@ -29,8 +32,22 @@ const styles = StyleSheet.create({
     borderWidth: 5,
     borderColor: 'red',
   },
+  textLayer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'space-around',
+    alignItems: 'center',
+  },
+  smallText: {
+    fontSize: 16,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+  },
   text: {
-    fontSize: 30,
-    textAlign: 'center',
+    fontSize: 32,
   },
 });

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, ViewStyle, GestureResponderEvent, LayoutChangeEvent } from 'react-native'
 
 import PokerCard, { CardContent, NumberCard } from '../molecules/poker-card';
 
@@ -17,21 +17,69 @@ export default class CardSlider extends Component<Props, State> {
     };
   }
 
+  currentLocationX: number | null = null;
+  currentPosition = 0.5;
+  sliderWidth: number = 0;
+
+  onTouchMove(event: GestureResponderEvent) {
+    const e = event.nativeEvent;
+
+    if (this.currentLocationX != null) {
+      const diff = e.locationX - this.currentLocationX;
+      let nextPosition = this.currentPosition + diff / 150;
+      nextPosition = Math.max(0, nextPosition);
+      nextPosition = Math.min(nextPosition, 0.99999);
+
+      this.currentPosition = nextPosition;
+      this.forceUpdate();
+    }
+
+    this.currentLocationX = e.locationX;
+  }
+
+  onTouchEnd(event: GestureResponderEvent) {
+    const e = event.nativeEvent;
+    this.currentLocationX = null;
+  }
+
+  onTouchStart(event: GestureResponderEvent) {
+    const e = event.nativeEvent;
+    this.currentLocationX = e.locationX;
+  }
+
+  onLayout(event: LayoutChangeEvent) {
+    this.sliderWidth = event.nativeEvent.layout.width
+  }
+
   render() {
+    const length = this.state.cardContents.length
     return (
-      <View style={styles.wideSlider}>
+      <View style={styles.wideSlider} onLayout={(event) => this.onLayout(event)}
+            onTouchMove={(event) => this.onTouchMove(event) } onTouchEnd={(event) => this.onTouchEnd(event)} onTouchStart={(event) => this.onTouchStart(event)}>
         {this.state.cardContents.map((content, index) => (
-          <PokerCard key={index} content={content} />
+          <View key={index} style={getCardPosition(index / length,
+            index / length <= this.currentPosition && this.currentPosition < (index+1) / length
+          )}>
+            <PokerCard content={content} />
+          </View>
         ))}
       </View>
     );
   }
 }
 
+function getCardPosition(position: number, selected: boolean): ViewStyle {
+  return {
+    position: 'absolute',
+    left: `${position * 100}%`,
+    bottom: selected ? '50%' : '0%',
+  }
+}
+
 const styles = StyleSheet.create({
   wideSlider: {
     width: '100%',
-    backgroundColor: 'black',
-    height: 200,
+    backgroundColor: 'white',
+    height: 150,
   },
 });
